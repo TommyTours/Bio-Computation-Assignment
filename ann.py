@@ -1,4 +1,6 @@
 from decimal import Decimal
+import numpy as np
+
 
 class network:
     hidden_weights = [], []
@@ -19,6 +21,14 @@ def step_activation_function(inputs, weights, threshold):
         return 1
     else:
         return 0
+
+
+def sigmoid_logistic(x):
+    return 1.0/(1 + np.exp(-x))
+
+
+def logistic_deriv(x):
+    return sigmoid_logistic(x) * (1 - sigmoid_logistic(x))
 
 
 def train_perceptron(weights, inputs, learning_rate, error):
