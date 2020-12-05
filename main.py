@@ -22,9 +22,12 @@ beginning_weights = [-threshold, Decimal(random.uniform(-1.0, 1.0)), Decimal(ran
 learning_rate = 1
 
 input_nodes = 6
-hidden_nodes = 5
+hidden_nodes = 3
+output_nodes = 1
 
-epoch_count = 1
+epoch_count = 4
+
+my_network = ann.Network(6, 3, 1)
 
 weights_input_to_hidden = np.random.uniform(-1, 1, (input_nodes, hidden_nodes))
 weights_hidden_to_output = np.random.uniform(-1, 1, hidden_nodes)
@@ -38,60 +41,80 @@ training_data = training_data.drop(['output'], 1)
 training_data = np.asarray(training_data)
 training_count = len(training_data[:, 0])
 
-validation_data = pandas.read_excel('assignment_validation_data_1.xlsx')
-validation_output = validation_data.output
-validation_data = validation_data.drop(['output'], 1)
-validation_data = np.asarray(validation_data)
-validation_count = len(validation_data[:, 0])
 
+ann.simple_neural_algorithm(training_count, my_network, training_data, hidden_nodes, output_nodes, target_output)
+
+print("Total error: " + str(my_network.error))
+
+#validation_data = pandas.read_excel('assignment_validation_data_1.xlsx')
+#validation_output = validation_data.output
+#validation_data = validation_data.drop(['output'], 1)
+#validation_data = np.asarray(validation_data)
+#validation_count = len(validation_data[:, 0])
+
+training_data = [[0, 0],
+                 [1, 0],
+                 [0, 1],
+                 [1, 1]]
+
+training_data = np.asarray(training_data)
+
+target_output = [0,
+                 1,
+                 1,
+                 1]
+
+training_count = len(training_data)
 print('eoc')
 
-for epoch in range(epoch_count):
-    for sample in range(training_count):
-        for hidden_node in range(hidden_nodes):
-            pre_activation_hidden[hidden_node] = np.dot(training_data[sample, :], weights_input_to_hidden[:, hidden_node])
-            post_activation_hidden[hidden_node] = ann.sigmoid_logistic(pre_activation_hidden[hidden_node])
+
+def mlp():
+    for epoch in range(epoch_count):
+        for sample in range(training_count):
+            for hidden_node in range(hidden_nodes):
+                pre_activation_hidden[hidden_node] = np.dot(training_data[sample, :], weights_input_to_hidden[:, hidden_node])
+                post_activation_hidden[hidden_node] = ann.sigmoid_logistic(pre_activation_hidden[hidden_node])
+
+            pre_activation_output = np.dot(post_activation_hidden, weights_hidden_to_output)
+            post_activation_output = ann.sigmoid_logistic(pre_activation_output)
+
+            final_error = post_activation_output - target_output[sample]
+
+            for hidden_node in range(hidden_nodes):
+                s_error = final_error * ann.logistic_deriv(pre_activation_output)
+                gradient_hidden_to_output = s_error * post_activation_hidden[hidden_node]
+
+                for input_node in range(input_nodes):
+                    input_value = training_data[sample, input_node]
+                    gradient_input_to_hidden = s_error * weights_hidden_to_output[hidden_node] * ann.logistic_deriv(pre_activation_hidden[hidden_node]) * input_value
+
+                    weights_input_to_hidden[input_node, hidden_node] = learning_rate * gradient_input_to_hidden
+
+                weights_hidden_to_output[hidden_node] -= learning_rate * gradient_hidden_to_output
+
+
+    ##################
+    # validation
+    ##################
+    correct_classification_count = 0
+    for sample in range(validation_count):
+        for node in range(hidden_nodes):
+            pre_activation_hidden[node] = np.dot(validation_data[sample, :], weights_input_to_hidden[:, node])
+            post_activation_hidden[node] = ann.sigmoid_logistic(pre_activation_hidden[node])
 
         pre_activation_output = np.dot(post_activation_hidden, weights_hidden_to_output)
         post_activation_output = ann.sigmoid_logistic(pre_activation_output)
 
-        final_error = post_activation_output - target_output[sample]
+        if post_activation_output > 0.5:
+            output = 1
+        else:
+            output = 0
 
-        for hidden_node in range(hidden_nodes):
-            s_error = final_error * ann.logistic_deriv(pre_activation_output)
-            gradient_hidden_to_output = s_error * post_activation_hidden[hidden_node]
+        if output == validation_output[sample]:
+            correct_classification_count += 1
 
-            for input_node in range(input_nodes):
-                input_value = training_data[sample, input_node]
-                gradient_input_to_hidden = s_error * weights_hidden_to_output[hidden_node] * ann.logistic_deriv(pre_activation_hidden[hidden_node]) * input_value
-
-                weights_input_to_hidden[input_node, hidden_node] = learning_rate * gradient_input_to_hidden
-
-            weights_hidden_to_output[hidden_node] -= learning_rate * gradient_hidden_to_output
-
-
-##################
-# validation
-##################
-correct_classification_count = 0
-for sample in range(validation_count):
-    for node in range(hidden_nodes):
-        pre_activation_hidden[node] = np.dot(validation_data[sample, :], weights_input_to_hidden[:, node])
-        post_activation_hidden[node] = ann.sigmoid_logistic(pre_activation_hidden[node])
-
-    pre_activation_output = np.dot(post_activation_hidden, weights_hidden_to_output)
-    post_activation_output = ann.sigmoid_logistic(pre_activation_output)
-
-    if post_activation_output > 0.5:
-        output = 1
-    else:
-        output = 0
-
-    if output == validation_output[sample]:
-        correct_classification_count += 1
-
-print('Percentage of correct classifications:')
-print(correct_classification_count*100/validation_count)
+    print('Percentage of correct classifications:')
+    print(correct_classification_count*100/validation_count)
 
 def solver_or():
     or_pairs = [[Decimal('0'), Decimal('0'), 0],
