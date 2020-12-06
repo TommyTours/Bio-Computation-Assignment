@@ -1,8 +1,10 @@
 from decimal import Decimal
 import pandas
 import numpy as np
+from sklearn.model_selection import train_test_split
 import random
 import ann
+import evolution
 
 
 #pandas_test = pandas.read_excel('training_data.xlsx')
@@ -15,57 +17,118 @@ import ann
 #preactH = np.zeros(4)
 #postactH = np.zeros(4)
 
-threshold = Decimal(random.uniform(-1.0, 1.0))  # originally tested with 0 as per coppin book
-
-beginning_weights = [-threshold, Decimal(random.uniform(-1.0, 1.0)), Decimal(random.uniform(-1.0, 1.0))]
-
-learning_rate = 1
-
-input_nodes = 6
-hidden_nodes = 3
-output_nodes = 1
-
-epoch_count = 4
-
-my_network = ann.Network(6, 3, 1)
-
-weights_input_to_hidden = np.random.uniform(-1, 1, (input_nodes, hidden_nodes))
-weights_hidden_to_output = np.random.uniform(-1, 1, hidden_nodes)
-
-pre_activation_hidden = np.zeros(hidden_nodes)
-post_activation_hidden = np.zeros(hidden_nodes)
-
-training_data = pandas.read_excel('assignment_training_data_1.xlsx')
+training_data = pandas.read_excel('full_data.xlsx')
 target_output = training_data.output
 training_data = training_data.drop(['output'], 1)
 training_data = np.asarray(training_data)
 training_count = len(training_data[:, 0])
 
+x = training_data[0:6, :]
+y = training_data[6, :]
 
-ann.simple_neural_algorithm(training_count, my_network, training_data, hidden_nodes, output_nodes, target_output)
+x_train, x_test, y_train, y_test = train_test_split(training_data, target_output)
 
-print("Total error: " + str(my_network.error))
+y_train = np.asarray(y_train)
 
-#validation_data = pandas.read_excel('assignment_validation_data_1.xlsx')
-#validation_output = validation_data.output
-#validation_data = validation_data.drop(['output'], 1)
-#validation_data = np.asarray(validation_data)
-#validation_count = len(validation_data[:, 0])
+def new_generation(population, mute_rate, mute_step, input_count, hidden_count, output_count, data, desired):
 
-training_data = [[0, 0],
-                 [1, 0],
-                 [0, 1],
-                 [1, 1]]
+    offspring = []
 
-training_data = np.asarray(training_data)
+    best_individual = evolution.get_best_nn(population)
 
-target_output = [0,
-                 1,
-                 1,
-                 1]
+    population = evolution.crossover(population)
 
-training_count = len(training_data)
-print('eoc')
+    evolution.individual_fitness_nn(population, input_count, hidden_count, output_count, data, desired)
+
+    population_fitness = evolution.population_fitness_nn(population)
+
+    population = evolution.mutation(population, mute_rate, mute_step)
+
+    evolution.individual_fitness_nn(population, input_count, hidden_count, output_count, data, desired)
+
+    population_fitness = evolution.population_fitness_nn(population)
+
+    offspring = evolution.tournament_selection_nn(population)
+
+    evolution.replace_worst_with_best_nn(offspring, best_individual)
+
+    print("Pop average fitness: " + str(population_fitness[2]))
+
+    return offspring
+
+
+def evolution_test():
+    population_size = 50
+    upper = 1.0
+    lower = -1.0
+    input_nodes = 10
+    hidden_nodes = 3
+    output_nodes = 1
+    mute_rate = 0.02
+    mute_step = 1
+
+    population = evolution.init_population_nn_weights(population_size, upper, lower, input_nodes, hidden_nodes, output_nodes)
+    evolution.individual_fitness_nn(population, input_nodes, hidden_nodes, output_nodes, x_train, y_train)
+    initial_fitness = evolution.population_fitness_nn(population)
+    print("Initial average fitness: " + str(initial_fitness[0]))
+    population = evolution.tournament_selection_nn(population)
+    tournament_fitness = evolution.population_fitness_nn(population)
+    print("Fitness after first tournament: " + str(tournament_fitness[0]))
+
+    best_and_mean = [[], []]
+
+    for x in range(0, 50):
+        population = new_generation(population, mute_rate, mute_step, input_nodes, hidden_nodes, output_nodes, x_train, y_train)
+        fitness = evolution.population_fitness_nn(population)
+        best_and_mean[0].append(fitness[1])
+        best_and_mean[1].append(fitness[2])
+
+    print("eoc")
+
+def nn_test():
+    threshold = Decimal(random.uniform(-1.0, 1.0))  # originally tested with 0 as per coppin book
+
+    beginning_weights = [-threshold, Decimal(random.uniform(-1.0, 1.0)), Decimal(random.uniform(-1.0, 1.0))]
+
+    learning_rate = 1
+
+    input_nodes = 10
+    hidden_nodes = 3
+    output_nodes = 1
+
+    epoch_count = 4
+
+    my_network = ann.Network(input_nodes, hidden_nodes, output_nodes)
+
+    weights_input_to_hidden = np.random.uniform(-1, 1, (input_nodes, hidden_nodes))
+    weights_hidden_to_output = np.random.uniform(-1, 1, hidden_nodes)
+
+    pre_activation_hidden = np.zeros(hidden_nodes)
+    post_activation_hidden = np.zeros(hidden_nodes)
+
+
+    ann.simple_neural_algorithm(my_network, x_train, y_train)
+
+    #validation_data = pandas.read_excel('assignment_validation_data_1.xlsx')
+    #validation_output = validation_data.output
+    #validation_data = validation_data.drop(['output'], 1)
+    #validation_data = np.asarray(validation_data)
+    #validation_count = len(validation_data[:, 0])
+
+    training_data = [[0, 0],
+                     [1, 0],
+                     [0, 1],
+                     [1, 1]]
+
+    training_data = np.asarray(training_data)
+
+    target_output = [0,
+                     1,
+                     1,
+                     1]
+
+    training_count = len(training_data)
+    print('eoc')
 
 
 def mlp():
@@ -182,3 +245,6 @@ def solve_and():
     print('1 and 0 = ' + str(ann.step_activation_function([Decimal('1'), and_pairs[1][0], and_pairs[1][1]], weights, threshold)))
     print('0 and 1 = ' + str(ann.step_activation_function([Decimal('1'), and_pairs[2][0], and_pairs[2][1]], weights, threshold)))
     print('1 and 1 = ' + str(ann.step_activation_function([Decimal('1'), and_pairs[3][0], and_pairs[3][1]], weights, threshold)))
+
+
+evolution_test()
