@@ -5,6 +5,7 @@ from sklearn.model_selection import train_test_split
 import random
 import ann
 import evolution
+import matplotlib.pyplot as plt
 
 
 #pandas_test = pandas.read_excel('training_data.xlsx')
@@ -52,7 +53,7 @@ def new_generation(population, mute_rate, mute_step, input_count, hidden_count, 
 
     evolution.replace_worst_with_best_nn(offspring, best_individual)
 
-    print("Pop average fitness: " + str(population_fitness[2]))
+    #print("Pop average fitness: " + str(population_fitness[2]))
 
     return offspring
 
@@ -82,6 +83,15 @@ def evolution_test():
         fitness = evolution.population_fitness_nn(population)
         best_and_mean[0].append(fitness[1])
         best_and_mean[1].append(fitness[2])
+
+    plt.title('Mute Rate: ' + str(mute_rate) + ', Mute Step: ' + str(mute_step))
+    plt.plot(best_and_mean[0])
+    plt.plot(best_and_mean[1])
+    plt.xlabel('Fitness')
+    plt.ylabel('Generation')
+    plt.legend(['Best', 'Mean'])
+    plt.show()
+    print("Best: " + str(best_and_mean[0][-1]))
 
     print("eoc")
 
