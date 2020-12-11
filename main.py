@@ -30,6 +30,7 @@ y = training_data[6, :]
 x_train, x_test, y_train, y_test = train_test_split(training_data, target_output)
 
 y_train = np.asarray(y_train)
+y_test = np.asarray(y_test)
 
 def new_generation(population, mute_rate, mute_step, input_count, hidden_count, output_count, data, desired):
 
@@ -39,15 +40,15 @@ def new_generation(population, mute_rate, mute_step, input_count, hidden_count, 
 
     population = evolution.crossover(population)
 
-    evolution.individual_fitness_nn(population, input_count, hidden_count, output_count, data, desired)
+    #evolution.individual_fitness_nn(population, input_count, hidden_count, output_count, data, desired)
 
-    population_fitness = evolution.population_fitness_nn(population)
+    #population_fitness = evolution.population_fitness_nn(population)
 
     population = evolution.mutation(population, mute_rate, mute_step)
 
     evolution.individual_fitness_nn(population, input_count, hidden_count, output_count, data, desired)
 
-    population_fitness = evolution.population_fitness_nn(population)
+    #population_fitness = evolution.population_fitness_nn(population)
 
     offspring = evolution.tournament_selection_nn(population)
 
@@ -70,30 +71,40 @@ def evolution_test():
 
     population = evolution.init_population_nn_weights(population_size, upper, lower, input_nodes, hidden_nodes, output_nodes)
     evolution.individual_fitness_nn(population, input_nodes, hidden_nodes, output_nodes, x_train, y_train)
-    initial_fitness = evolution.population_fitness_nn(population)
-    print("Initial average fitness: " + str(initial_fitness[0]))
+    initial_fitness = evolution.population_fitness_nn(population, len(x_train))
+    print("Initial average fitness: " + str(initial_fitness[2]))
     population = evolution.tournament_selection_nn(population)
-    tournament_fitness = evolution.population_fitness_nn(population)
-    print("Fitness after first tournament: " + str(tournament_fitness[0]))
+    tournament_fitness = evolution.population_fitness_nn(population, len(x_train))
+    print("Fitness after first tournament: " + str(tournament_fitness[2]))
 
     best_and_mean = [[], []]
+    test_set_error = []
 
-    for x in range(0, 50):
+    for x in range(0, 2000):
         population = new_generation(population, mute_rate, mute_step, input_nodes, hidden_nodes, output_nodes, x_train, y_train)
-        fitness = evolution.population_fitness_nn(population)
+        fitness = evolution.population_fitness_nn(population, len(x_train))
+        print("average fitness after " + str(x+1) + " generations: " + str(fitness[2]))
         best_and_mean[0].append(fitness[1])
         best_and_mean[1].append(fitness[2])
+        # test test data using best individual
+        best_individual = evolution.get_best_nn(population)
+        network = ann.Network(input_nodes, hidden_nodes, output_nodes, best_individual.gene)
+        ann.simple_neural_algorithm(network, x_test, y_test)
+        test_set_error.append(network.error/ len(x_test))
 
     plt.title('Mute Rate: ' + str(mute_rate) + ', Mute Step: ' + str(mute_step))
     plt.plot(best_and_mean[0])
     plt.plot(best_and_mean[1])
-    plt.xlabel('Fitness')
-    plt.ylabel('Generation')
-    plt.legend(['Best', 'Mean'])
+    plt.plot(test_set_error)
+    plt.xlabel('Generation')
+    plt.ylabel('Error')
+    plt.legend(['Best', 'Mean','Test Error'])
+    #plt.ylim(0.0, 1.0)
     plt.show()
     print("Best: " + str(best_and_mean[0][-1]))
 
     print("eoc")
+
 
 def nn_test():
     threshold = Decimal(random.uniform(-1.0, 1.0))  # originally tested with 0 as per coppin book
@@ -258,3 +269,4 @@ def solve_and():
 
 
 evolution_test()
+

@@ -37,9 +37,9 @@ def individual_fitness_nn(population, input_num, hidden_num, output_num, data, d
         population[x].fitness = network.error / len(data)
 
 
-def population_fitness_nn(population):
+def population_fitness_nn(population, worst_possible):
     total_fitness = 0
-    best = 1.0
+    best = worst_possible
     population_size = len(population)
 
     for x in range(0, population_size):
@@ -68,6 +68,15 @@ def tournament_selection_nn(population):
 
     return offspring
 
+
+def roulette_wheel_selection_nn(population):
+    max = sum(individual.fitness for individual in population)
+    pick = random.uniform(0, max)
+    current = 0
+    for individual in population:
+        current += individual.fitness
+        if current > pick:
+            return individual
 
 def crossover(population):
     population_size = len(population)
