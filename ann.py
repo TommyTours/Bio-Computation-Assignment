@@ -92,12 +92,20 @@ def simple_neural_algorithm(network, inputs, desired):
                 output_node_outputs[i] += (network.output_weights[i][j] * hidden_node_outputs[j])
             output_node_outputs[i] += network.output_weights[i][network.hidden_node_count]  # bias
             output_node_outputs[i] = sigmoid_logistic(output_node_outputs[i])
-        if desired[t] == 1 and output_node_outputs[0] < 0.5:
-            network.error += 1.0
-        if desired[t] == 0 and output_node_outputs[0] >= 0.5:
-            network.error += 1.0
+        #if desired[t] == 1 and output_node_outputs[0] < 0.5:
+        #    network.error += 1.0
+        #if desired[t] == 0 and output_node_outputs[0] >= 0.5:
+        #    network.error += 1.0
+        calcuate_error_simple(network, desired[t], output_node_outputs[0])
 
     #print(output_node_outputs)
+
+
+def calcuate_error_simple(network, desired, output):
+    if desired == 1 and output < 0.5:
+        network.error += 1.0
+    if desired == 0 and output >= 0.5:
+        network.error += 1.0
 
 
 

@@ -27,7 +27,7 @@ training_count = len(training_data[:, 0])
 x = training_data[0:6, :]
 y = training_data[6, :]
 
-x_train, x_test, y_train, y_test = train_test_split(training_data, target_output)
+x_train, x_test, y_train, y_test = train_test_split(training_data, target_output, shuffle=False)
 
 y_train = np.asarray(y_train)
 y_test = np.asarray(y_test)
