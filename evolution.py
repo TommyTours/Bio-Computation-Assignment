@@ -51,6 +51,20 @@ def population_fitness_nn(population, worst_possible):
 
     return total_best_mean
 
+def variable_size_tournament(population, competitors):
+    offspring = []
+    population_size =len(population)
+
+    for i in range(0, population_size):
+        best = population[random.randint(0, population_size - 1)]
+        for x in range(0, competitors - 1):
+            candidate = random.randint(0, population_size - 1)
+            if population[candidate].fitness < best.fitness:
+                best = population[candidate]
+        offspring.append(copy.deepcopy(best))
+
+    return offspring
+
 
 def tournament_selection_nn(population):
     offspring = []

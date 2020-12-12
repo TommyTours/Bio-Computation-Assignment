@@ -50,7 +50,8 @@ def new_generation(population, mute_rate, mute_step, input_count, hidden_count, 
 
     #population_fitness = evolution.population_fitness_nn(population)
 
-    offspring = evolution.tournament_selection_nn(population)
+    #offspring = evolution.tournament_selection_nn(population)
+    offspring = evolution.variable_size_tournament(population, 5)
 
     evolution.replace_worst_with_best_nn(offspring, best_individual)
 
@@ -73,14 +74,15 @@ def evolution_test():
     evolution.individual_fitness_nn(population, input_nodes, hidden_nodes, output_nodes, x_train, y_train)
     initial_fitness = evolution.population_fitness_nn(population, len(x_train))
     print("Initial average fitness: " + str(initial_fitness[2]))
-    population = evolution.tournament_selection_nn(population)
+    #population = evolution.tournament_selection_nn(population)
+    population = evolution.variable_size_tournament(population, 5)
     tournament_fitness = evolution.population_fitness_nn(population, len(x_train))
     print("Fitness after first tournament: " + str(tournament_fitness[2]))
 
     best_and_mean = [[], []]
     test_set_error = []
 
-    for x in range(0, 2000):
+    for x in range(0, 200):
         population = new_generation(population, mute_rate, mute_step, input_nodes, hidden_nodes, output_nodes, x_train, y_train)
         fitness = evolution.population_fitness_nn(population, len(x_train))
         print("average fitness after " + str(x+1) + " generations: " + str(fitness[2]))
