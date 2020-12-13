@@ -7,22 +7,26 @@ import ann
 import evolution
 import matplotlib.pyplot as plt
 
-
-#pandas_test = pandas.read_excel('training_data.xlsx')
-#output = pandas_test.output
-#pandas_test = pandas_test.drop(['output'], 1)
-#pandas_test = np.asarray(pandas_test)
-#weightsItoH = np.random.uniform(-1, 1, (3, 4))
-#weightsHtoO = np.random.uniform(-1, 1, 4)
-#testval = pandas_test[0,:]
-#preactH = np.zeros(4)
-#postactH = np.zeros(4)
-
 training_data = pandas.read_excel('full_data.xlsx')
 target_output = training_data.output
 training_data = training_data.drop(['output'], 1)
 training_data = np.asarray(training_data)
 training_count = len(training_data[:, 0])
+
+#training_data = pandas.read_excel('abalone_data.xlsx')
+#target_output = training_data.output
+#training_data = training_data.drop(['output'], 1)
+#training_data = np.asarray(training_data)
+#training_count = len(training_data)
+
+#for i in range(0, training_count):
+#    if target_output[i] == 'M':
+#        target_output[i] = 0
+#    elif target_output[i] == 'F':
+#        target_output[i] = 1
+#    else:
+#        target_output[i] = 2
+
 
 x = training_data[0:6, :]
 y = training_data[6, :]
@@ -65,10 +69,13 @@ def evolution_test():
     upper = 1.0
     lower = -1.0
     input_nodes = 10
-    hidden_nodes = 3
+    #input_nodes = 8
+    hidden_nodes = 4
     output_nodes = 1
+    #output_nodes = 3
     mute_rate = 0.02
     mute_step = 1
+    data_set = 'blackboard data 3'
 
     population = evolution.init_population_nn_weights(population_size, upper, lower, input_nodes, hidden_nodes, output_nodes)
     evolution.individual_fitness_nn(population, input_nodes, hidden_nodes, output_nodes, x_train, y_train)
@@ -82,7 +89,7 @@ def evolution_test():
     best_and_mean = [[], []]
     test_set_error = []
 
-    for x in range(0, 200):
+    for x in range(0, 2000):
         population = new_generation(population, mute_rate, mute_step, input_nodes, hidden_nodes, output_nodes, x_train, y_train)
         fitness = evolution.population_fitness_nn(population, len(x_train))
         print("average fitness after " + str(x+1) + " generations: " + str(fitness[2]))
@@ -92,9 +99,9 @@ def evolution_test():
         best_individual = evolution.get_best_nn(population)
         network = ann.Network(input_nodes, hidden_nodes, output_nodes, best_individual.gene)
         ann.simple_neural_algorithm(network, x_test, y_test)
-        test_set_error.append(network.error/ len(x_test))
+        test_set_error.append(network.error / len(x_test))
 
-    plt.title('Mute Rate: ' + str(mute_rate) + ', Mute Step: ' + str(mute_step))
+    plt.title('Data set: ' + data_set + '\n' + 'Mute Rate: ' + str(mute_rate) + ', Mute Step: ' + str(mute_step) + '\npopulation size: ' + str(population_size) + ', hidden nodes: ' + str(hidden_nodes))
     plt.plot(best_and_mean[0])
     plt.plot(best_and_mean[1])
     plt.plot(test_set_error)
@@ -103,7 +110,8 @@ def evolution_test():
     plt.legend(['Best', 'Mean','Test Error'])
     #plt.ylim(0.0, 1.0)
     plt.show()
-    print("Best: " + str(best_and_mean[0][-1]))
+    print("Best Training Fitness: " + str(best_and_mean[0][-1]))
+    print("Final Test Set Error: " + str(test_set_error[-1]))
 
     print("eoc")
 

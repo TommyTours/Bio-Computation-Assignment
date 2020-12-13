@@ -96,9 +96,25 @@ def simple_neural_algorithm(network, inputs, desired):
         #    network.error += 1.0
         #if desired[t] == 0 and output_node_outputs[0] >= 0.5:
         #    network.error += 1.0
-        calcuate_error_simple(network, desired[t], output_node_outputs[0])
+        #calcuate_error_simple(network, desired[t], output_node_outputs[0])
+        #calculate_error_diff(network, desired[t], output_node_outputs[0])
+        #calculate_error_multi_output(network, desired[t], output_node_outputs)
+        calculate_error_square_diff(network, desired[t], output_node_outputs[0])
 
+    calculate_mean_square_error(network, data_size)
     #print(output_node_outputs)
+
+
+def calculate_error_multi_output(network, desired, outputs):
+    desired_arr = []
+
+    for o in range(0, network.output_node_count):
+        if o == desired:
+            desired_arr.append(1)
+        else:
+            desired_arr.append(0)
+    for o in range(0, network.output_node_count):
+        calculate_error_diff(network, desired_arr[o], outputs[o])
 
 
 def calcuate_error_simple(network, desired, output):
@@ -106,9 +122,22 @@ def calcuate_error_simple(network, desired, output):
         network.error += 1.0
     if desired == 0 and output >= 0.5:
         network.error += 1.0
+        
+        
+def calculate_error_diff(network, desired, output):
+    if desired == 1:
+        network.error += desired - output
+    if desired == 0:
+        network.error += output
 
 
+def calculate_error_square_diff(network, desired, output):
+    network.error += pow(desired - output, 2)
 
+
+def calculate_mean_square_error(network, input_count):
+    #network.error is already the sum of squared differences between desired and actual
+    network.error = (1/input_count) * network.error
 
 
 debug_training_data = [[0.803662, 0.981136, 0.369132, 0.498354, 0.067417, 0.067417, 0],
