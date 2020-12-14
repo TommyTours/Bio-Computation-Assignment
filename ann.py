@@ -99,6 +99,9 @@ def simple_neural_algorithm(network, inputs, desired):
         #calcuate_error_simple(network, desired[t], output_node_outputs[0])
         #calculate_error_diff(network, desired[t], output_node_outputs[0])
         #calculate_error_multi_output(network, desired[t], output_node_outputs)
+        test_softmax = softmax(output_node_outputs)
+        desired_arr = get_desired_array(desired[t], network.output_node_count)
+        test_cross_entropy = cross_entropy(desired_arr, test_softmax)
         calculate_error_square_diff(network, desired[t], output_node_outputs[0])
 
     calculate_mean_square_error(network, data_size)
@@ -106,15 +109,21 @@ def simple_neural_algorithm(network, inputs, desired):
 
 
 def calculate_error_multi_output(network, desired, outputs):
-    desired_arr = []
+    desired_arr = get_desired_array(desired, network.output_node_count)
 
+    get_desired_array(desired)
     for o in range(0, network.output_node_count):
+        calculate_error_diff(network, desired_arr[o], outputs[o])
+
+
+def get_desired_array(desired, output_count):
+    desired_arr = []
+    for o in range(0, output_count):
         if o == desired:
             desired_arr.append(1)
         else:
             desired_arr.append(0)
-    for o in range(0, network.output_node_count):
-        calculate_error_diff(network, desired_arr[o], outputs[o])
+    return desired_arr
 
 
 def calcuate_error_simple(network, desired, output):
@@ -138,6 +147,16 @@ def calculate_error_square_diff(network, desired, output):
 def calculate_mean_square_error(network, input_count):
     #network.error is already the sum of squared differences between desired and actual
     network.error = (1/input_count) * network.error
+
+
+def softmax(outputs):
+    return np.exp(outputs) / sum(np.exp(outputs))
+
+def cross_entropy(target, actual):
+    total = 0
+    for e in range(0, len(target)):
+        total += target[e] * np.log(actual[e])
+    return -total
 
 
 debug_training_data = [[0.803662, 0.981136, 0.369132, 0.498354, 0.067417, 0.067417, 0],

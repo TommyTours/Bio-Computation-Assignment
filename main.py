@@ -7,25 +7,25 @@ import ann
 import evolution
 import matplotlib.pyplot as plt
 
-training_data = pandas.read_excel('full_data.xlsx')
-target_output = training_data.output
-training_data = training_data.drop(['output'], 1)
-training_data = np.asarray(training_data)
-training_count = len(training_data[:, 0])
-
-#training_data = pandas.read_excel('abalone_data.xlsx')
+#training_data = pandas.read_excel('full_data.xlsx')
 #target_output = training_data.output
 #training_data = training_data.drop(['output'], 1)
 #training_data = np.asarray(training_data)
-#training_count = len(training_data)
+#training_count = len(training_data[:, 0])
 
-#for i in range(0, training_count):
-#    if target_output[i] == 'M':
-#        target_output[i] = 0
-#    elif target_output[i] == 'F':
-#        target_output[i] = 1
-#    else:
-#        target_output[i] = 2
+training_data = pandas.read_excel('abalone_data.xlsx')
+target_output = training_data.output
+training_data = training_data.drop(['output'], 1)
+training_data = np.asarray(training_data)
+training_count = len(training_data)
+
+for i in range(0, training_count):
+    if target_output[i] == 'M':
+        target_output[i] = 0
+    elif target_output[i] == 'F':
+        target_output[i] = 1
+    else:
+        target_output[i] = 2
 
 
 x = training_data[0:6, :]
@@ -68,14 +68,14 @@ def evolution_test():
     population_size = 50
     upper = 1.0
     lower = -1.0
-    input_nodes = 10
-    #input_nodes = 8
+    #input_nodes = 10
+    input_nodes = 8
     hidden_nodes = 4
-    output_nodes = 1
-    #output_nodes = 3
+    #output_nodes = 1
+    output_nodes = 3
     mute_rate = 0.02
     mute_step = 1
-    data_set = 'blackboard data 3'
+    data_set = 'abalone'
 
     population = evolution.init_population_nn_weights(population_size, upper, lower, input_nodes, hidden_nodes, output_nodes)
     evolution.individual_fitness_nn(population, input_nodes, hidden_nodes, output_nodes, x_train, y_train)
