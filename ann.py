@@ -9,6 +9,7 @@ class Network:
     output_node_count = 0
     hidden_weights = []
     output_weights = []
+    confusion_matrix = []
     error = 0.0
 
     # init that randomly generates weights
@@ -18,6 +19,7 @@ class Network:
         self.output_node_count = output_num
         self.hidden_weights = np.random.uniform(-1.0, 1.0, (hidden_num, input_num + 1))
         self.output_weights = np.random.uniform(-1.0, 1.0, (output_num, hidden_num + 1))
+        self.confusion_matrix = generate_confusion_matrix(self.output_node_count)
 
     # init that takes a list of weights and biases from somewhere (i.e from the evolutionary algorithm) and assigns them
     def __init__(self, input_num, hidden_num, output_num, weights_and_bias):
@@ -26,6 +28,7 @@ class Network:
         self.output_node_count = output_num
         self.hidden_weights = np.random.uniform(0, 0, (hidden_num, input_num + 1))
         self.output_weights = np.random.uniform(0, 0, (output_num, hidden_num + 1))
+        self.confusion_matrix = generate_confusion_matrix(self.output_node_count)
         weight_count = 0
         for x in range(0, input_num + 1):
             for y in range(0, hidden_num):
@@ -105,6 +108,8 @@ def simple_neural_algorithm(network, inputs, desired):
         desired_arr = get_desired_array(desired[t], network.output_node_count)
         # sets error using cross entropy
         network.error += cross_entropy(desired_arr, test_softmax)
+        # update confusion matrix
+        update_confusion_matrix(network.confusion_matrix, test_softmax, desired_arr)
 
 
 def get_desired_array(desired, output_count):
@@ -115,6 +120,22 @@ def get_desired_array(desired, output_count):
         else:
             desired_arr.append(0)
     return desired_arr
+
+def generate_confusion_matrix(outputs):
+    confusion_matrix = []
+    for x in range(0, outputs):
+        confusion_matrix.append([0] * outputs)
+    return confusion_matrix
+
+def update_confusion_matrix(matrix, softmax, desired_arr):
+    guess = 0
+    prob = softmax[0]
+    for x in range(1, len(softmax)):
+        if softmax[x] > prob:
+            guess = x
+            prob = softmax[x]
+    desired = desired_arr.index(max(desired_arr))
+    matrix[desired][guess] += 1
 
 
 # function I designed to calculate error by simply taking the difference between desired and actual output
@@ -146,3 +167,13 @@ def cross_entropy(target, actual):
     for e in range(0, len(target)):
         total += target[e] * np.log2(actual[e])
     return -total
+
+def calculate_accuracy(confusion_matrix, total_tests):
+    correct = 0
+    incorrect = 0
+    for x in range(0, len(confusion_matrix)):
+        correct += confusion_matrix[x][x]
+    incorrect = total_tests - correct
+    accuracy = (100 / total_tests) * correct
+    return accuracy
+    print('eof')
