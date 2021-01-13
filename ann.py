@@ -10,6 +10,7 @@ class Network:
     hidden_weights = []
     output_weights = []
     confusion_matrix = []
+    accuracy = 0.0
     error = 0.0
 
     # init that randomly generates weights
@@ -110,6 +111,7 @@ def simple_neural_algorithm(network, inputs, desired):
         network.error += cross_entropy(desired_arr, test_softmax)
         # update confusion matrix
         update_confusion_matrix(network.confusion_matrix, test_softmax, desired_arr)
+    network.accuracy = calculate_accuracy(network.confusion_matrix, len(desired))
 
 
 def get_desired_array(desired, output_count):

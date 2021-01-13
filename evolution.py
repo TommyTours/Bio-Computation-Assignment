@@ -4,7 +4,7 @@ import copy
 
 
 class Individual:  # Class to represent Individuals within the population
-    gene = []  # List of real values between
+    gene = []  # List of real values between gen_upper and gene_lower
     fitness = 0
     gene_upper = None
     gene_lower = None
@@ -51,7 +51,6 @@ def population_fitness_nn(population, worst_possible):
         if population[x].fitness < best:  # if the error is lower than the best seen so far
             best = population[x].fitness  # update best to this.
         total_fitness += population[x].fitness
-
     # array containing the total, best and average fitness of the population
     total_best_mean = [total_fitness, best, total_fitness / population_size]
 
@@ -94,7 +93,8 @@ def tournament_selection_nn(population):
     return offspring
 
 
-# fitness proportional selection TODO: Test
+# fitness proportional selection 
+# TODO: Test
 def roulette_wheel_selection_nn(population):
     max = sum(individual.fitness for individual in population)
     pick = random.uniform(0, max)
@@ -114,7 +114,8 @@ def crossover(population):
         crosspoint = random.randint(0, number_of_genes - 1)  # picks a random cross point in the gene
         swap_tails(population[x], population[+1], crosspoint)
         population[x].fitness = 0
-        population[x + 1].fitness = 0  # resets fitness value as crossover has modified it.
+        if x + 1 < population_size:
+            population[x + 1].fitness = 0  # resets fitness value as crossover has modified it.
 
     return population
 

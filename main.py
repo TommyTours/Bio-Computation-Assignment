@@ -67,10 +67,10 @@ def evolution_test():
     #output_nodes = 3
     #output_nodes = 2
     mute_rate = 0.02
-    mute_step = 1
-    shuffle_data = True
+    mute_step = 0.1
+    shuffle_data = False
     #data_set = 'abalone'
-    data_set = 'iris_data.xlsx'
+    data_set = 'BB_data2.xlsx'
 
     #get_data_abalone()
     #get_data_BB()
@@ -91,7 +91,7 @@ def evolution_test():
     test_set_error = []
     test_set_accuracy = []
 
-    for x in range(0, 200):
+    for x in range(0, 400):
         population = new_generation(population, mute_rate, mute_step, input_nodes, hidden_nodes, output_nodes, x_train, y_train)
         fitness = evolution.population_fitness_nn(population, len(x_train))
         print("Total fitness after " + str(x+1) + " generations: " + str(fitness[0]))
@@ -127,7 +127,9 @@ def evolution_test():
 
     print('Final test set confusion matrix:')
     for x in range(len(network.confusion_matrix)):
-        print(network.confusion_matrix[x])
+        print(network.confusion_matrix[x], end=",")
+    print('')
+    print('Final Test Set Accuracy: ' + str(test_set_accuracy[-1]) + '%')
 
     print("eoc")
 
